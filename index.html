@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计信息</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .category {
+            margin-bottom: 40px;
+        }
+
+        .category-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .tool-card.recommended {
+            border-left-color: #ff6b6b;
+            background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);
+        }
+
+        .tool-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .tool-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            word-break: break-all;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .tool-link:hover {
+            text-decoration: underline;
+        }
+
+        .tool-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-box::placeholder {
+            color: #999;
+        }
+
+        /* 管理按钮样式 */
+        .management-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 弹窗样式 - 现代化设计 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
+            backdrop-filter: blur(10px);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                backdrop-filter: blur(0px);
+            }
+            to {
+                opacity: 1;
+                backdrop-filter: blur(10px);
+            }
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #ffffff, #f8f9ff);
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            margin: 0;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e8ecf4;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fafbfc;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 
+                0 0 0 3px rgba(102, 126, 234, 0.1),
+                0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .form-select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 45px;
+        }
+
+        /* 复选框样式 */
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            transform: scale(1.2);
+            accent-color: #667eea;
+        }
+
+        .form-group label:has(input[type="checkbox"]) {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: normal;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .form-group label:has(input[type="checkbox"]):hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6);
+        }
+
+        .modal-footer {
+            padding: 20px 30px 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        /* 删除按钮样式 */
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover .delete-btn {
+            display: flex;
+        }
+
+        .delete-btn:hover {
+            background: #ff3742;
+            transform: scale(1.1);
+        }
+
+        /* 高级搜索样式 */
+        .search-filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            outline: none;
+            background: white;
+            cursor: pointer;
+        }
+
+        .tip {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            color: #2d3436;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .tip::before {
+            content: "💡 ";
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                gap: 15px;
+            }
+            
+            .stat-item {
+                padding: 10px 15px;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ 统计信息</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalTools">64</span>
+                    <div class="stat-label">个实用工具</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">12</span>
+                    <div class="stat-label">个分类</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">2025/9/19</span>
+                    <div class="stat-label">最后更新</div>
+                </div>
+            </div>
+            
+            <!-- 管理按钮 -->
+            <div class="management-buttons">
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    ➕ 添加工具
+                </button>
+                <button class="btn btn-secondary" onclick="exportTools()">
+                    📤 导出工具
+                </button>
+                <button class="btn btn-secondary" onclick="importTools()">
+                    📥 导入工具
+                </button>
+                <button class="btn btn-secondary" onclick="toggleDeleteMode()">
+                    🗑️ 管理工具
+                </button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="tip">
+                提示：使用搜索框快速找到需要的工具，点击上方亲可以添加新工具
+            </div>
+
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="🔍 搜索工具..." id="searchBox">
+                <div class="search-filters">
+                    <select class="filter-select" id="categoryFilter">
+                        <option value="">所有分类</option>
+                        <option value="工具库网站">工具库网站</option>
+                        <option value="在线去水印">在线去水印</option>
+                        <option value="图片处理">图片处理</option>
+                        <option value="文档转换">文档转换</option>
+                        <option value="视频处理">视频处理</option>
+                        <option value="音频处理">音频处理</option>
+                        <option value="代码工具">代码工具</option>
+                        <option value="网络工具">网络工具</option>
+                        <option value="设计工具">设计工具</option>
+                        <option value="爬虫工具">爬虫工具</option>
+                        <option value="娱乐、动漫">娱乐、动漫</option>
+                    </select>
+                    <select class="filter-select" id="typeFilter">
+                        <option value="">所有类型</option>
+                        <option value="recommended">推荐工具</option>
+                        <option value="normal">普通工具</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 工具库网站 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🏠</span>
+                    工具库网站
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card recommended">
+                        <div class="tool-name">小众技术工具库</div>
+                        <a href="https://www.xiaozhongjishu.com/?use_xbridge3=true&loader_name=forest&need_sec_link=1&sec_link_scene=im" class="tool-link" target="_blank">https://www.xiaozhongjishu.com/</a>
+                        <div class="tool-description">小众但实用的技术工具集合</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">30tool工具库</div>
+                        <a href="https://30aitool.com/" class="tool-link" target="_blank">https://30aitool.com/</a>
+                        <div class="tool-description">综合AI工具导航网站</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">果汁Ai导航</div>
+                        <a href="http://guozhivip.com/ai/" class="tool-link" target="_blank">http://guozhivip.com/ai/</a>
+                        <div class="tool-description">专业的AI工具导航平台</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Ai导航网</div>
+                        <a href="https://www.ainav.cn/" class="tool-link" target="_blank">https://www.ainav.cn/</a>
+                        <div class="tool-description">AI工具集合导航</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">菜鸟工具</div>
+                        <a href="https://www.jyshare.com/" class="tool-link" target="_blank">https://www.jyshare.com/</a>
+                        <div class="tool-description">编程学习和在线工具集合</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">映技派工具</div>
+                        <a href="https://www.yjpoo.com/" class="tool-link" target="_blank">https://www.yjpoo.com/</a>
+                        <div class="tool-description">专注AI人工智能平台</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">火花应用</div>
+                        <a href="https://app.huohua.me/" class="tool-link" target="_blank">https://app.huohua.me/</a>
+                        <div class="tool-description">智能应用工具平台</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">爱达杂货店</div>
+                        <a href="https://adzhp.cc/" class="tool-link" target="_blank">https://adzhp.cc/</a>
+                        <div class="tool-description">综合性工具库平台</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">奇迹秀</div>
+                        <a href="https://www.qijishow.com/" class="tool-link" target="_blank">https://www.qijishow.com/</a>
+                        <div class="tool-description">多功能在线工具集合</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Tbox导航</div>
+                        <a href="https://www.tboxn.com/" class="tool-link" target="_blank">https://www.tboxn.com/</a>
+                        <div class="tool-description">在线工具箱平台</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">TOP123导航</div>
+                        <a href="https://123.topstip.com/" class="tool-link" target="_blank">https://123.topstip.com/</a>
+                        <div class="tool-description">搜索全球的工具网站</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">免费内容集合</div>
+                        <a href="https://fmhy.net/" class="tool-link" target="_blank">https://fmhy.net/</a>
+                        <div class="tool-description">互联网最大的免费内容集合</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">网站工具库</div>
+                        <a href="https://ovpmp59m1ux.feishu.cn/wiki/GOI0wmQEhiXqoLky96xcApW7nMg" class="tool-link" target="_blank">飞书文档</a>
+                        <div class="tool-description">网站工具库好像好有</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 在线去水印、抠图、在线视频剪辑 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🎨</span>
+                    在线去水印、抠图、在线视频剪辑
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card recommended">
+                        <div class="tool-name">一键抠图</div>
+                        <a href="https://remove.photos/zh-cn/" class="tool-link" target="_blank">https://remove.photos/zh-cn/</a>
+                        <div class="tool-description">智能AI抠图工具，快速去除背景</div>
+                        <span class="tag">强烈推荐</span>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">在线照片水印去除器</div>
+                        <a href="https://www.apeaksoft.com/zh-CN/watermark-remover" class="tool-link" target="_blank">https://www.apeaksoft.com/zh-CN/watermark-remover</a>
+                        <div class="tool-description">专业的水印去除工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">在线视频剪辑</div>
+                        <a href="https://online-video-cutter.com/" class="tool-link" target="_blank">https://online-video-cutter.com/</a>
+                        <div class="tool-description">在线视频编辑和剪切工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">在线免费去水印工具</div>
+                        <a href="https://magiceraser.org/zh/remove-watermark-from-image/" class="tool-link" target="_blank">https://magiceraser.org/zh/remove-watermark-from-image/</a>
+                        <div class="tool-description">免费的图片水印去除工具</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 直连AI网站 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🤖</span>
+                    直连AI网站
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-name">选车</div>
+                        <a href="https://www.chatopens.com/Web/List.html" class="tool-link" target="_blank">https://www.chatopens.com/Web/List.html</a>
+                        <div class="tool-description">AI聊天工具集合平台</div>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">AskManyAi</div>
+                        <a href="https://askmany.cn/login" class="tool-link" target="_blank">https://askmany.cn/login</a>
+                        <div class="tool-description">多AI模型对话平台</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">GPT5（需翻墙）</div>
+                        <a href="https://chatgpt.com/c/68aaee0a-0744-8326-b2f9-aff25d03544e" class="tool-link" target="_blank">https://chatgpt.com/</a>
+                        <div class="tool-description">OpenAI官方ChatGPT平台</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图片或者视频来生成搞笑的 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🎭</span>
+                    图片视频生成工具
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-name">Viggle</div>
+                        <a href="https://askmany.cn/login" class="tool-link" target="_blank">https://askmany.cn/login</a>
+                        <div class="tool-description">AI视频生成和编辑工具</div>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">阿里巴巴图片生成视频</div>
+                        <a href="https://tongyi.aliyun.com/wan/explore" class="tool-link" target="_blank">https://tongyi.aliyun.com/wan/explore</a>
+                        <div class="tool-description">通义万相，AI图片生成视频工具</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习网站 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">📚</span>
+                    学习网站
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card recommended">
+                        <div class="tool-name">中国知网</div>
+                        <a href="https://www.cnki.net/" class="tool-link" target="_blank">https://www.cnki.net/</a>
+                        <div class="tool-description">学术文献检索和下载平台</div>
+                        <span class="tag">强烈推荐</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI提示词工具 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">💡</span>
+                    AI提示词工具
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card recommended">
+                        <div class="tool-name">AI提示词生成器</div>
+                        <a href="https://promptark.net/zh" class="tool-link" target="_blank">https://promptark.net/zh</a>
+                        <div class="tool-description">专业的AI提示词生成和优化工具</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实用工具 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🛠️</span>
+                    实用工具
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-name">邮箱开源工具</div>
+                        <a href="https://www.billionmail.com/" class="tool-link" target="_blank">https://www.billionmail.com/</a>
+                        <div class="tool-description">临时邮箱服务工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">PPTX转WORD</div>
+                        <a href="https://cdkm.com/cn/pptx-to-doc" class="tool-link" target="_blank">https://cdkm.com/cn/pptx-to-doc</a>
+                        <div class="tool-description">在线文档格式转换工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">快捷键备忘录</div>
+                        <a href="https://hotkeycheatsheet.com/zh" class="tool-link" target="_blank">https://hotkeycheatsheet.com/zh</a>
+                        <div class="tool-description">各种软件快捷键查询工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Pexels数据集</div>
+                        <a href="https://www.pexels.com/search/videos/airplane/" class="tool-link" target="_blank">https://www.pexels.com/search/videos/airplane/</a>
+                        <div class="tool-description">免费高质量图片和视频素材</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Roboflow数据集</div>
+                        <a href="https://universe.roboflow.com/" class="tool-link" target="_blank">https://universe.roboflow.com/</a>
+                        <div class="tool-description">机器学习数据集平台</div>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">极简插件</div>
+                        <a href="https://chrome.zzzmh.cn/index" class="tool-link" target="_blank">https://chrome.zzzmh.cn/index</a>
+                        <div class="tool-description">Chrome浏览器插件下载平台</div>
+                        <span class="tag">强烈推荐</span>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">卸载工具</div>
+                        <a href="https://geekuninstaller.com/" class="tool-link" target="_blank">https://geekuninstaller.com/</a>
+                        <div class="tool-description">深度软件卸载工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">图吧工具箱</div>
+                        <a href="https://www.tubatool.com/" class="tool-link" target="_blank">https://www.tubatool.com/</a>
+                        <div class="tool-description">硬件检测和系统工具集合</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">游戏加加</div>
+                        <a href="https://gamepp.com/" class="tool-link" target="_blank">https://gamepp.com/</a>
+                        <div class="tool-description">游戏性能优化和监控工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">HiBit Uninstaller</div>
+                        <a href="https://zhuanlan.zhihu.com/p/630633200" class="tool-link" target="_blank">https://zhuanlan.zhihu.com/p/630633200</a>
+                        <div class="tool-description">免费轻量的软件卸载清理工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">工具剪贴板</div>
+                        <a href="https://github.com/EcoPasteEN/EcoPaste" class="tool-link" target="_blank">https://github.com/EcoPasteEN/EcoPaste</a>
+                        <div class="tool-description">开源剪贴板管理工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Steam++</div>
+                        <a href="https://steampp.net/" class="tool-link" target="_blank">https://steampp.net/</a>
+                        <div class="tool-description">Steam游戏平台增强工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">无限邮箱</div>
+                        <a href="https://2925.com/" class="tool-link" target="_blank">https://2925.com/</a>
+                        <div class="tool-description">临时邮箱服务平台</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">宝塔服务器</div>
+                        <a href="https://www.bt.cn/new/index.html" class="tool-link" target="_blank">https://www.bt.cn/new/index.html</a>
+                        <div class="tool-description">服务器管理面板工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Google Gemini命令行工具</div>
+                        <a href="https://github.com/google-gemini/gemini-cli" class="tool-link" target="_blank">https://github.com/google-gemini/gemini-cli</a>
+                        <div class="tool-description">Google Gemini的命令行接口</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Gemini CLI登录解决方案</div>
+                        <a href="https://kxnotes.com/gemini-cli-failed-to-login/" class="tool-link" target="_blank">https://kxnotes.com/gemini-cli-failed-to-login/</a>
+                        <div class="tool-description">Gemini CLI登录问题解决教程</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">免费壁纸</div>
+                        <a href="https://haowallpaper.com/" class="tool-link" target="_blank">https://haowallpaper.com/</a>
+                        <div class="tool-description">高质量免费壁纸下载网站</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">SPSSPRO</div>
+                        <a href="https://www.spsspro.com/" class="tool-link" target="_blank">https://www.spsspro.com/</a>
+                        <div class="tool-description">在线数据分析工具平台</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI工具 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🤖</span>
+                    AI工具
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-name">问小白</div>
+                        <a href="https://www.wenxiaobai.com/" class="tool-link" target="_blank">https://www.wenxiaobai.com/</a>
+                        <div class="tool-description">智能问答AI助手</div>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">腾讯元宝</div>
+                        <a href="https://yuanbao.tencent.com/chat/naQivTmsDa" class="tool-link" target="_blank">https://yuanbao.tencent.com/chat/naQivTmsDa</a>
+                        <div class="tool-description">腾讯推出的AI对话助手</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">DeepSeek</div>
+                        <a href="https://www.deepseek.com/" class="tool-link" target="_blank">https://www.deepseek.com/</a>
+                        <div class="tool-description">深度求索AI对话平台</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">豆包</div>
+                        <a href="https://www.doubao.com/chat/" class="tool-link" target="_blank">https://www.doubao.com/chat/</a>
+                        <div class="tool-description">字节跳动AI聊天助手</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 破解工具 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🔓</span>
+                    破解工具
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-name">PyCharm 2099永久版</div>
+                        <a href="https://pan.baidu.com/s/1CO7EKK4sVhGgYueb03ZMxA" class="tool-link" target="_blank">百度网盘链接</a>
+                        <div class="tool-description">PyCharm永久激活版（提取码: dudi）</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Navicat Premium下载</div>
+                        <a href="https://blog.csdn.net/m0_70898474/article/details/136275566" class="tool-link" target="_blank">https://blog.csdn.net/m0_70898474/article/details/136275566</a>
+                        <div class="tool-description">数据库管理工具下载教程</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">PyCharm激活</div>
+                        <a href="https://www.ajihuo.com/" class="tool-link" target="_blank">https://www.ajihuo.com/</a>
+                        <div class="tool-description">软件激活工具和教程</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 修理、设计工具 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🔧</span>
+                    修理、设计工具
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-name">Flux.ai PCB设计</div>
+                        <a href="https://www.flux.ai/maximagination/imu-plus-motor-driver/pcb_2d" class="tool-link" target="_blank">https://www.flux.ai/maximagination/imu-plus-motor-driver/pcb_2d</a>
+                        <div class="tool-description">在线PCB电路板设计工具（需翻墙）</div>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">Figma设计</div>
+                        <a href="https://www.figma.com/login?is_not_gen_0=true&resource_type=team" class="tool-link" target="_blank">https://www.figma.com/login</a>
+                        <div class="tool-description">基于浏览器的协作式UI设计工具</div>
+                        <span class="tag">强烈推荐</span>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">iFixit免费修理手册</div>
+                        <a href="https://zh.ifixit.com/" class="tool-link" target="_blank">https://zh.ifixit.com/</a>
+                        <div class="tool-description">免费的设备维修指南和手册</div>
+                        <span class="tag">强烈推荐</span>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">简单设计</div>
+                        <a href="https://jiandan.link/" class="tool-link" target="_blank">https://jiandan.link/</a>
+                        <div class="tool-description">简单易用的在线设计工具</div>
+                    </div>
+                    <div class="tool-card recommended">
+                        <div class="tool-name">PDF24 Tools</div>
+                        <a href="https://tools.pdf24.org/zh/" class="tool-link" target="_blank">https://tools.pdf24.org/zh/</a>
+                        <div class="tool-description">免费在线PDF工具集合</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">PPT制作工具</div>
+                        <a href="https://app.presentations.ai/docs/login?#/" class="tool-link" target="_blank">https://app.presentations.ai/docs/login</a>
+                        <div class="tool-description">AI驱动的PPT制作工具（需翻墙）</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">PPT模版</div>
+                        <a href="https://www.1ppt.com/" class="tool-link" target="_blank">https://www.1ppt.com/</a>
+                        <div class="tool-description">免费PPT模板下载网站</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 爬虫工具 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🕷️</span>
+                    爬虫工具
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card recommended">
+                        <div class="tool-name">Maxun爬虫工具</div>
+                        <a href="https://github.com/getmaxun/maxun" class="tool-link" target="_blank">https://github.com/getmaxun/maxun</a>
+                        <div class="tool-description">开源的网页数据爬取工具</div>
+                        <span class="tag">推荐</span>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">爬虫工具库</div>
+                        <a href="https://spidertools.cn/#/" class="tool-link" target="_blank">https://spidertools.cn/#/</a>
+                        <div class="tool-description">专业的爬虫工具集合平台</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 娱乐、动漫 -->
+            <div class="category">
+                <h2 class="category-title">
+                    <span class="category-icon">🎮</span>
+                    娱乐、动漫
+                </h2>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-name">动漫图片搜索</div>
+                        <a href="https://trace.moe/" class="tool-link" target="_blank">https://trace.moe/</a>
+                        <div class="tool-description">用图片搜索动漫出处的工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">樱花动漫</div>
+                        <a href="https://yinghuadm.cn/" class="tool-link" target="_blank">https://yinghuadm.cn/</a>
+                        <div class="tool-description">在线动漫观看平台</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">包子漫画</div>
+                        <a href="https://cn.baozimhcn.com/" class="tool-link" target="_blank">https://cn.baozimhcn.com/</a>
+                        <div class="tool-description">在线漫画阅读平台</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">PlayPhrase</div>
+                        <a href="https://www.playphrase.me/#/search?language=en" class="tool-link" target="_blank">https://www.playphrase.me/#/search?language=en</a>
+                        <div class="tool-description">输入台词找电影片段的搜索工具</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">Formalizer</div>
+                        <a href="https://goblin.tools/Formalizer" class="tool-link" target="_blank">https://goblin.tools/Formalizer</a>
+                        <div class="tool-description">将混乱的想法变成优雅的想法</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-name">动漫共和国</div>
+                        <a href="https://www.omofun23.com/" class="tool-link" target="_blank">https://www.omofun23.com/</a>
+                        <div class="tool-description">动漫资源分享平台</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加工具弹窗 -->
+    <div id="addToolModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">✨ 添加新工具</h2>
+                <span class="close" onclick="closeAddModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addToolForm">
+                    <div class="form-group">
+                        <label class="form-label">🏷️ 工具名称 *</label>
+                        <input type="text" class="form-input" id="toolName" placeholder="请输入工具名称" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔗 工具链接 *</label>
+                        <input type="url" class="form-input" id="toolUrl" placeholder="https://example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📝 工具描述 *</label>
+                        <textarea class="form-input form-textarea" id="toolDescription" placeholder="请简要描述工具的功能和用途..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📂 分类 *</label>
+                        <select class="form-select" id="toolCategory" required>
+                            <option value="">选择分类</option>
+                            <option value="工具库网站">🌐 工具库网站</option>
+                            <option value="在线去水印">🖼️ 在线去水印</option>
+                            <option value="图片处理">🎨 图片处理</option>
+                            <option value="文档转换">📄 文档转换</option>
+                            <option value="视频处理">🎬 视频处理</option>
+                            <option value="音频处理">🎵 音频处理</option>
+                            <option value="代码工具">💻 代码工具</option>
+                            <option value="网络工具">🌍 网络工具</option>
+                            <option value="设计工具">🎯 设计工具</option>
+                            <option value="爬虫工具">🕷️ 爬虫工具</option>
+                            <option value="娱乐、动漫">🎮 娱乐、动漫</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="isRecommended"> ⭐ 推荐工具
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddModal()">取消</button>
+                <button type="submit" form="addToolForm" class="btn btn-primary">✅ 添加工具</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入工具弹窗 -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📥 导入工具</h2>
+                <span class="close" onclick="closeImportModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">📁 选择文件</label>
+                    <input type="file" class="form-input" id="importFile" accept=".json,.txt">
+                    <div style="margin-top: 10px; padding: 15px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border-radius: 8px; font-size: 0.9rem; color: #555;">
+                        💡 <strong>提示：</strong>请选择之前导出的JSON格式文件，或符合格式要求的工具列表文件。
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeImportModal()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="processImport()">📤 开始导入</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 搜索功能
+        const searchBox = document.getElementById('searchBox');
+        const toolCards = document.querySelectorAll('.tool-card');
+        const categories = document.querySelectorAll('.category');
+
+        searchBox.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            categories.forEach(category => {
+                let hasVisibleCards = false;
+                const cards = category.querySelectorAll('.tool-card');
+                
+                cards.forEach(card => {
+                    const toolName = card.querySelector('.tool-name').textContent.toLowerCase();
+                    const toolDescription = card.querySelector('.tool-description').textContent.toLowerCase();
+                    
+                    if (toolName.includes(searchTerm) || toolDescription.includes(searchTerm)) {
+                        card.style.display = 'block';
+                        hasVisibleCards = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // 隐藏没有可见工具卡片的分类
+                category.style.display = hasVisibleCards ? 'block' : 'none';
+            });
+        });
+
+        // 更新工具计数
+        function updateToolCount() {
+            const totalTools = document.querySelectorAll('.tool-card').length;
+            document.getElementById('totalTools').textContent = totalTools;
+        }
+
+        // 页面加载完成后加载本地存储的工具并更新计数
+        document.addEventListener('DOMContentLoaded', function() {
+            loadToolsFromStorage();
+            updateToolCount();
+        });
+
+        // 管理功能JavaScript
+        
+        // 打开添加工具弹窗
+        function openAddModal() {
+            document.getElementById('addToolModal').style.display = 'block';
+        }
+
+        // 关闭添加工具弹窗
+        function closeAddModal() {
+            document.getElementById('addToolModal').style.display = 'none';
+            document.getElementById('addToolForm').reset();
+        }
+
+        // 打开导入弹窗
+        function openImportModal() {
+            document.getElementById('importModal').style.display = 'block';
+        }
+
+        // 关闭导入弹窗
+        function closeImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+        }
+
+        // 添加工具表单提交
+        document.getElementById('addToolForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const toolName = document.getElementById('toolName').value;
+            const toolUrl = document.getElementById('toolUrl').value;
+            const toolDescription = document.getElementById('toolDescription').value;
+            const toolCategory = document.getElementById('toolCategory').value;
+            const isRecommended = document.getElementById('isRecommended').checked;
+            
+            // 创建新工具卡片
+            const newToolCard = document.createElement('div');
+            newToolCard.className = 'tool-card';
+            if (isRecommended) {
+                newToolCard.classList.add('recommended');
+            }
+            
+            newToolCard.innerHTML = `
+                <div class="tool-name">${toolName}</div>
+                <a href="${toolUrl}" class="tool-link" target="_blank">${toolUrl}</a>
+                <div class="tool-description">${toolDescription}</div>
+                <button class="delete-btn" onclick="deleteTool(this)">删除</button>
+            `;
+            
+            // 找到对应分类并添加工具
+            let targetCategory = null;
+            const categories = document.querySelectorAll('.category');
+            
+            categories.forEach(category => {
+                const categoryTitle = category.querySelector('.category-title').textContent;
+                if (categoryTitle === toolCategory) {
+                    targetCategory = category;
+                }
+            });
+            
+            if (targetCategory) {
+                const toolsContainer = targetCategory.querySelector('.tools');
+                toolsContainer.appendChild(newToolCard);
+            } else {
+                // 如果分类不存在，创建新分类
+                const newCategory = document.createElement('div');
+                newCategory.className = 'category';
+                newCategory.innerHTML = `
+                    <h2 class="category-title">${toolCategory}</h2>
+                    <div class="tools">
+                        ${newToolCard.outerHTML}
+                    </div>
+                `;
+                document.querySelector('.container').appendChild(newCategory);
+            }
+            
+            // 更新工具计数
+            updateToolCount();
+            
+            // 保存到本地存储
+            saveToolsToStorage();
+            
+            // 关闭弹窗
+            closeAddModal();
+            
+            alert('工具添加成功！');
+        });
+
+        // 删除工具
+        function deleteTool(button) {
+            if (confirm('确定要删除这个工具吗？')) {
+                const toolCard = button.closest('.tool-card');
+                const category = toolCard.closest('.category');
+                
+                toolCard.remove();
+                
+                // 如果分类下没有工具了，隐藏分类
+                const remainingTools = category.querySelectorAll('.tool-card');
+                if (remainingTools.length === 0) {
+                    category.style.display = 'none';
+                }
+                
+                // 更新工具计数
+                updateToolCount();
+                
+                // 保存到本地存储
+                saveToolsToStorage();
+            }
+        }
+
+        // 导出工具列表
+        function exportTools() {
+            const tools = [];
+            const toolCards = document.querySelectorAll('.tool-card');
+            
+            toolCards.forEach(card => {
+                const category = card.closest('.category').querySelector('.category-title').textContent;
+                const tool = {
+                    name: card.querySelector('.tool-name').textContent,
+                    url: card.querySelector('.tool-link').href,
+                    description: card.querySelector('.tool-description').textContent,
+                    category: category,
+                    recommended: card.classList.contains('recommended')
+                };
+                tools.push(tool);
+            });
+            
+            const dataStr = JSON.stringify(tools, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'tools_export.json';
+            link.click();
+        }
+
+        // 处理导入
+        function processImport() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请选择文件');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const tools = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(tools)) {
+                        throw new Error('文件格式不正确');
+                    }
+                    
+                    // 清空现有工具（可选）
+                    if (confirm('是否清空现有工具并导入新工具？（选择"取消"将追加到现有工具）')) {
+                        document.querySelectorAll('.category').forEach(cat => cat.remove());
+                    }
+                    
+                    // 按分类组织工具
+                    const categorizedTools = {};
+                    tools.forEach(tool => {
+                        if (!categorizedTools[tool.category]) {
+                            categorizedTools[tool.category] = [];
+                        }
+                        categorizedTools[tool.category].push(tool);
+                    });
+                    
+                    // 创建分类和工具
+                    Object.keys(categorizedTools).forEach(categoryName => {
+                        let category = Array.from(document.querySelectorAll('.category')).find(cat => 
+                            cat.querySelector('.category-title').textContent === categoryName
+                        );
+                        
+                        if (!category) {
+                            category = document.createElement('div');
+                            category.className = 'category';
+                            category.innerHTML = `
+                                <h2 class="category-title">${categoryName}</h2>
+                                <div class="tools"></div>
+                            `;
+                            document.querySelector('.container').appendChild(category);
+                        }
+                        
+                        const toolsContainer = category.querySelector('.tools');
+                        
+                        categorizedTools[categoryName].forEach(tool => {
+                            const toolCard = document.createElement('div');
+                            toolCard.className = 'tool-card';
+                            if (tool.recommended) {
+                                toolCard.classList.add('recommended');
+                            }
+                            
+                            toolCard.innerHTML = `
+                                <div class="tool-name">${tool.name}</div>
+                                <a href="${tool.url}" class="tool-link" target="_blank">${tool.url}</a>
+                                <div class="tool-description">${tool.description}</div>
+                                <button class="delete-btn" onclick="deleteTool(this)">删除</button>
+                            `;
+                            
+                            toolsContainer.appendChild(toolCard);
+                        });
+                    });
+                    
+                    updateToolCount();
+                    
+                    // 保存到本地存储
+                    saveToolsToStorage();
+                    
+                    closeImportModal();
+                    alert('导入成功！');
+                    
+                } catch (error) {
+                    alert('文件格式错误：' + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // 高级搜索功能
+        const categoryFilter = document.getElementById('categoryFilter');
+        const typeFilter = document.getElementById('typeFilter');
+
+        function performAdvancedSearch() {
+            const searchTerm = searchBox.value.toLowerCase();
+            const selectedCategory = categoryFilter.value;
+            const selectedType = typeFilter.value;
+            
+            categories.forEach(category => {
+                const categoryTitle = category.querySelector('.category-title').textContent;
+                let hasVisibleCards = false;
+                const cards = category.querySelectorAll('.tool-card');
+                
+                // 分类过滤
+                if (selectedCategory && categoryTitle !== selectedCategory) {
+                    category.style.display = 'none';
+                    return;
+                }
+                
+                cards.forEach(card => {
+                    const toolName = card.querySelector('.tool-name').textContent.toLowerCase();
+                    const toolDescription = card.querySelector('.tool-description').textContent.toLowerCase();
+                    const isRecommended = card.classList.contains('recommended');
+                    
+                    let shouldShow = true;
+                    
+                    // 文本搜索
+                    if (searchTerm && !toolName.includes(searchTerm) && !toolDescription.includes(searchTerm)) {
+                        shouldShow = false;
+                    }
+                    
+                    // 类型过滤
+                    if (selectedType === 'recommended' && !isRecommended) {
+                        shouldShow = false;
+                    } else if (selectedType === 'normal' && isRecommended) {
+                        shouldShow = false;
+                    }
+                    
+                    if (shouldShow) {
+                        card.style.display = 'block';
+                        hasVisibleCards = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                category.style.display = hasVisibleCards ? 'block' : 'none';
+            });
+        }
+
+        // 绑定高级搜索事件
+        categoryFilter.addEventListener('change', performAdvancedSearch);
+        typeFilter.addEventListener('change', performAdvancedSearch);
+
+        // 修改原有搜索功能以支持高级搜索
+        searchBox.addEventListener('input', performAdvancedSearch);
+
+        // 管理工具功能
+        function manageTools() {
+            const toolCards = document.querySelectorAll('.tool-card');
+            const isManaging = document.body.classList.contains('managing');
+            
+            if (isManaging) {
+                // 退出管理模式
+                document.body.classList.remove('managing');
+                toolCards.forEach(card => {
+                    const deleteBtn = card.querySelector('.delete-btn');
+                    if (deleteBtn) {
+                        deleteBtn.style.display = 'none';
+                    }
+                });
+                document.querySelector('[onclick="manageTools()"]').textContent = '管理工具';
+            } else {
+                // 进入管理模式
+                document.body.classList.add('managing');
+                toolCards.forEach(card => {
+                    let deleteBtn = card.querySelector('.delete-btn');
+                    if (!deleteBtn) {
+                        deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.textContent = '删除';
+                        deleteBtn.onclick = function() { deleteTool(this); };
+                        card.appendChild(deleteBtn);
+                    }
+                    deleteBtn.style.display = 'block';
+                });
+                document.querySelector('[onclick="manageTools()"]').textContent = '退出管理';
+            }
+        }
+
+        // 本地存储功能
+        function saveToolsToStorage() {
+            console.log('开始保存工具到本地存储...');
+            const tools = [];
+            const toolCards = document.querySelectorAll('.tool-card');
+            
+            console.log(`找到 ${toolCards.length} 个工具卡片`);
+            
+            toolCards.forEach(card => {
+                const category = card.closest('.category').querySelector('.category-title').textContent;
+                const tool = {
+                    name: card.querySelector('.tool-name').textContent,
+                    url: card.querySelector('.tool-link').href,
+                    description: card.querySelector('.tool-description').textContent,
+                    category: category,
+                    recommended: card.classList.contains('recommended')
+                };
+                tools.push(tool);
+                console.log(`保存工具: ${tool.name} (${tool.category})`);
+            });
+            
+            console.log('准备保存的工具数据:', tools);
+            localStorage.setItem('userTools', JSON.stringify(tools));
+            console.log('工具数据已保存到本地存储');
+        }
+
+        function loadToolsFromStorage() {
+            console.log('开始加载本地存储的工具数据...');
+            const savedTools = localStorage.getItem('userTools');
+            console.log('本地存储数据:', savedTools);
+            
+            if (!savedTools) {
+                console.log('没有找到本地存储的工具数据');
+                return;
+            }
+            
+            try {
+                const tools = JSON.parse(savedTools);
+                console.log('解析后的工具数据:', tools);
+                
+                if (!Array.isArray(tools)) {
+                    console.log('工具数据格式不正确');
+                    return;
+                }
+                
+                console.log(`找到 ${tools.length} 个工具`);
+                
+                // 按分类组织工具
+                const categorizedTools = {};
+                tools.forEach(tool => {
+                    if (!categorizedTools[tool.category]) {
+                        categorizedTools[tool.category] = [];
+                    }
+                    categorizedTools[tool.category].push(tool);
+                });
+                
+                console.log('分类后的工具:', categorizedTools);
+                
+                // 创建分类和工具
+                Object.keys(categorizedTools).forEach(categoryName => {
+                    // 安全地查找现有分类
+                    const categories = document.querySelectorAll('.category');
+                    let category = null;
+                    
+                    if (categories) {
+                        category = Array.from(categories).find(cat => {
+                            const titleElement = cat.querySelector('.category-title');
+                            return titleElement && titleElement.textContent === categoryName;
+                        });
+                    }
+                    
+                    if (!category) {
+                        // 创建新分类
+                        console.log(`创建新分类: ${categoryName}`);
+                        category = document.createElement('div');
+                        category.className = 'category';
+                        category.innerHTML = `
+                            <h2 class="category-title">${categoryName}</h2>
+                            <div class="tools"></div>
+                        `;
+                        const container = document.querySelector('.container');
+                        if (container) {
+                            container.appendChild(category);
+                        } else {
+                            console.error('找不到容器元素');
+                            return;
+                        }
+                    } else {
+                        console.log(`找到现有分类: ${categoryName}`);
+                    }
+                    
+                    const toolsContainer = category.querySelector('.tools');
+                    if (!toolsContainer) {
+                        console.error(`分类 ${categoryName} 中找不到工具容器`);
+                        return;
+                    }
+                    
+                    categorizedTools[categoryName].forEach(tool => {
+                        console.log(`添加工具: ${tool.name}`);
+                        
+                        // 安全地检查工具是否已存在
+                        const existingCards = toolsContainer.querySelectorAll('.tool-card');
+                        let existingTool = null;
+                        
+                        if (existingCards) {
+                            existingTool = Array.from(existingCards).find(card => {
+                                const nameElement = card.querySelector('.tool-name');
+                                const linkElement = card.querySelector('.tool-link');
+                                return nameElement && linkElement && 
+                                       nameElement.textContent === tool.name &&
+                                       linkElement.href === tool.url;
+                            });
+                        }
+                        
+                        if (existingTool) {
+                            console.log(`工具 ${tool.name} 已存在，跳过`);
+                            return;
+                        }
+                        
+                        const toolCard = document.createElement('div');
+                        toolCard.className = 'tool-card';
+                        if (tool.recommended) {
+                            toolCard.classList.add('recommended');
+                        }
+                        
+                        toolCard.innerHTML = `
+                            <div class="tool-name">${tool.name}</div>
+                            <a href="${tool.url}" class="tool-link" target="_blank">${tool.url}</a>
+                            <div class="tool-description">${tool.description}</div>
+                            <button class="delete-btn" onclick="deleteTool(this)">删除</button>
+                        `;
+                        
+                        toolsContainer.appendChild(toolCard);
+                    });
+                });
+                
+                updateToolCount();
+                console.log('工具加载完成');
+            } catch (error) {
+                console.error('加载本地存储的工具数据失败:', error);
+            }
+        }
+
+        // 点击弹窗外部关闭弹窗
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addToolModal');
+            const importModal = document.getElementById('importModal');
+            
+            if (event.target === addModal) {
+                closeAddModal();
+            }
+            if (event.target === importModal) {
+                closeImportModal();
+            }
+        }
+    </script>
+</body>
+</html>
