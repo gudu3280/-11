@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -167,8 +168,8 @@
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
         }
 
-        .preview-btn {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
+        .copy-btn {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
             border: none;
             padding: 8px 15px;
@@ -181,9 +182,17 @@
             gap: 5px;
         }
 
-        .preview-btn:hover {
+        .copy-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
         }
 
         /* 移动端快速添加按钮 */
@@ -212,62 +221,6 @@
 
         .mobile-add-btn:active {
             transform: scale(0.95);
-        }
-
-        /* 图片预览模态框 */
-        .image-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-        }
-
-        .image-modal-content {
-            position: relative;
-            margin: auto;
-            padding: 20px;
-            width: 90%;
-            max-width: 800px;
-            top: 50%;
-            transform: translateY(-50%);
-            text-align: center;
-        }
-
-        .preview-image {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .image-close {
-            position: absolute;
-            top: 10px;
-            right: 25px;
-            color: #fff;
-            font-size: 35px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .image-close:hover {
-            color: #ccc;
-        }
-
-        .image-loading {
-            color: #fff;
-            font-size: 1.2rem;
-            margin: 20px 0;
-        }
-
-        .image-error {
-            color: #ff6b6b;
-            font-size: 1rem;
-            margin: 20px 0;
         }
 
         .tag {
@@ -716,9 +669,33 @@
                 line-height: 1.4;
             }
             
+            /* 移动端按钮优化 */
+            .tool-actions {
+                flex-direction: column;
+                gap: 8px;
+                margin-top: 10px;
+            }
+            
+            .copy-btn, .delete-btn {
+                width: 100%;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                min-height: 44px; /* 符合移动端触摸规范 */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .copy-btn {
+                order: 1; /* 复制按钮排在第一位 */
+            }
+            
             .delete-btn {
-                padding: 6px 12px;
+                order: 2; /* 删除按钮排在第二位 */
+                padding: 8px 12px;
                 font-size: 0.8rem;
+                min-height: 40px;
             }
         }
     </style>
@@ -800,6 +777,11 @@
                         <div class="tool-name">小众技术工具库</div>
                         <a href="https://www.xiaozhongjishu.com/?use_xbridge3=true&loader_name=forest&need_sec_link=1&sec_link_scene=im" class="tool-link" target="_blank">https://www.xiaozhongjishu.com/</a>
                         <div class="tool-description">小众但实用的技术工具集合</div>
+                        <div class="tool-actions">
+                            <button class="copy-btn" onclick="copyToolLink('https://www.xiaozhongjishu.com/?use_xbridge3=true&loader_name=forest&need_sec_link=1&sec_link_scene=im', this)">
+                                📋 复制链接
+                            </button>
+                        </div>
                         <span class="tag">推荐</span>
                     </div>
                     <div class="tool-card recommended">
@@ -894,8 +876,8 @@
                         <a href="https://magiceraser.org/zh/remove-watermark-from-image/" class="tool-link" target="_blank">https://magiceraser.org/zh/remove-watermark-from-image/</a>
                         <div class="tool-description">免费的图片水印去除工具</div>
                         <div class="tool-actions">
-                            <button class="preview-btn" onclick="previewWebsite('https://magiceraser.org/zh/remove-watermark-from-image/')">
-                                🖼️ 预览
+                            <button class="copy-btn" onclick="copyToolLink('https://magiceraser.org/zh/remove-watermark-from-image/', this)">
+                                📋 复制链接
                             </button>
                         </div>
                     </div>
@@ -1363,9 +1345,57 @@
 
         // 页面加载完成后加载本地存储的工具并更新计数
         document.addEventListener('DOMContentLoaded', function() {
+            addCopyButtonsToAllTools();
             loadToolsFromStorage();
             updateToolCount();
         });
+
+        // 为所有工具卡片添加复制按钮
+        function addCopyButtonsToAllTools() {
+            const toolCards = document.querySelectorAll('.tool-card');
+            
+            toolCards.forEach(card => {
+                // 检查是否已经有 tool-actions
+                let toolActions = card.querySelector('.tool-actions');
+                if (toolActions) {
+                    return; // 已经有按钮了，跳过
+                }
+                
+                // 获取工具链接
+                const toolLink = card.querySelector('.tool-link');
+                if (!toolLink) {
+                    return; // 没有链接，跳过
+                }
+                
+                const url = toolLink.href;
+                
+                // 创建 tool-actions 容器
+                toolActions = document.createElement('div');
+                toolActions.className = 'tool-actions';
+                
+                // 创建复制按钮
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.onclick = function() { copyToolLink(url, this); };
+                copyBtn.innerHTML = '📋 复制链接';
+                
+                toolActions.appendChild(copyBtn);
+                
+                // 插入到描述后面，标签前面
+                const description = card.querySelector('.tool-description');
+                const tag = card.querySelector('.tag');
+                
+                if (description) {
+                    if (tag) {
+                        // 如果有标签，插入到标签前面
+                        card.insertBefore(toolActions, tag);
+                    } else {
+                        // 如果没有标签，插入到描述后面
+                        description.insertAdjacentElement('afterend', toolActions);
+                    }
+                }
+            });
+        }
 
         // 管理功能JavaScript
         
@@ -1412,8 +1442,8 @@
                 <a href="${toolUrl}" class="tool-link" target="_blank">${toolUrl}</a>
                 <div class="tool-description">${toolDescription}</div>
                 <div class="tool-actions">
-                    <button class="preview-btn" onclick="previewWebsite('${toolUrl}')">
-                        🖼️ 预览
+                    <button class="copy-btn" onclick="copyToolLink('${toolUrl}', this)">
+                        📋 复制链接
                     </button>
                     <button class="delete-btn" onclick="deleteTool(this)">删除</button>
                 </div>
@@ -1838,31 +1868,50 @@
             }
         }
 
-        // 网站预览功能
-        function previewWebsite(url) {
-            const modal = document.getElementById('imageModal');
-            const modalContent = document.querySelector('.image-modal-content');
-            
-            modalContent.innerHTML = `
-                <span class="image-close" onclick="closeImageModal()">&times;</span>
-                <div class="image-loading">正在加载网站预览...</div>
-                <iframe src="${url}" style="width: 100%; height: 70vh; border: none; border-radius: 10px; background: white;" 
-                        onload="this.previousElementSibling.style.display='none'"
-                        onerror="showPreviewError()"></iframe>
-            `;
-            
-            modal.style.display = 'block';
-        }
-
-        function showPreviewError() {
-            const loading = document.querySelector('.image-loading');
-            if (loading) {
-                loading.innerHTML = '<div class="image-error">无法加载网站预览，请直接点击链接访问</div>';
+        // 复制链接功能
+        async function copyToolLink(url, buttonElement) {
+            try {
+                // 尝试使用现代 Clipboard API
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(url);
+                } else {
+                    // 降级方案：使用传统方法
+                    const textArea = document.createElement('textarea');
+                    textArea.value = url;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                }
+                
+                // 显示复制成功的反馈
+                const originalText = buttonElement.innerHTML;
+                buttonElement.innerHTML = '✅ 已复制';
+                buttonElement.classList.add('copied');
+                
+                // 2秒后恢复原状
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalText;
+                    buttonElement.classList.remove('copied');
+                }, 2000);
+                
+            } catch (err) {
+                console.error('复制失败:', err);
+                // 显示复制失败的反馈
+                const originalText = buttonElement.innerHTML;
+                buttonElement.innerHTML = '❌ 复制失败';
+                buttonElement.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a52)';
+                
+                // 2秒后恢复原状
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalText;
+                    buttonElement.style.background = '';
+                }, 2000);
             }
-        }
-
-        function closeImageModal() {
-            document.getElementById('imageModal').style.display = 'none';
         }
 
         // 点击模态框外部关闭
@@ -1883,14 +1932,6 @@
             }
         }
     </script>
-
-    <!-- 图片预览模态框 -->
-    <div id="imageModal" class="image-modal">
-        <div class="image-modal-content">
-            <span class="image-close" onclick="closeImageModal()">&times;</span>
-            <div class="image-loading">正在加载...</div>
-        </div>
-    </div>
 
     <!-- 移动端快速添加按钮 -->
     <button class="mobile-add-btn" onclick="openAddModal()" title="添加工具">
